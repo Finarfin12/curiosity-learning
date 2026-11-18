@@ -4,3 +4,5 @@ main.js
 test-vault/.obsidian/
 test-vault/Learning/
 coverage/
+
+.qa-profile*/
