@@ -1,0 +1,46 @@
+{
+  "socratic": [
+    {
+      "question": "What mechanism makes your explanation work?",
+      "hints": [
+        "Identify one cause.",
+        "Name what changes.",
+        "Connect that change to the result."
+      ]
+    },
+    {
+      "question": "Under what condition would your explanation stop applying?",
+      "hints": [
+        "Find a hidden assumption.",
+        "Change one condition.",
+        "Explain when the result changes."
+      ]
+    },
+    {
+      "question": "How would you apply this idea to a new example?",
+      "hints": [
+        "Choose a concrete example.",
+        "Find the same principle.",
+        "Explain the first step."
+      ]
+    }
+  ],
+  "devil": [
+    {
+      "question": "What is the strongest objection to your explanation?",
+      "hints": [
+        "Pick one claim.",
+        "Reverse one assumption.",
+        "Find a case that challenges the claim."
+      ]
+    },
+    {
+      "question": "What evidence would change your conclusion?",
+      "hints": [
+        "Name a prediction.",
+        "Imagine a conflicting finding.",
+        "Explain how it would change your judgment."
+      ]
+    }
+  ]
+}

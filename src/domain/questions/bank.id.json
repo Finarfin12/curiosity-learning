@@ -1,0 +1,46 @@
+{
+  "socratic": [
+    {
+      "question": "Apa mekanisme yang membuat penjelasanmu bekerja?",
+      "hints": [
+        "Cari satu penyebab.",
+        "Sebutkan apa yang berubah.",
+        "Hubungkan perubahan itu ke hasil."
+      ]
+    },
+    {
+      "question": "Pada kondisi apa penjelasanmu berhenti berlaku?",
+      "hints": [
+        "Cari asumsi tersembunyi.",
+        "Ubah satu kondisi.",
+        "Jelaskan kapan hasil berubah."
+      ]
+    },
+    {
+      "question": "Bagaimana kamu menerapkan gagasan ini pada contoh baru?",
+      "hints": [
+        "Pilih contoh konkret.",
+        "Cari prinsip yang sama.",
+        "Jelaskan langkah pertama."
+      ]
+    }
+  ],
+  "devil": [
+    {
+      "question": "Apa bantahan terkuat terhadap penjelasanmu?",
+      "hints": [
+        "Pilih satu klaim.",
+        "Balik salah satu asumsinya.",
+        "Cari contoh yang mempertanyakan klaim itu."
+      ]
+    },
+    {
+      "question": "Bukti apa yang akan membuatmu mengubah kesimpulan?",
+      "hints": [
+        "Tentukan prediksi.",
+        "Bayangkan hasil yang berbeda.",
+        "Jelaskan dampaknya pada kesimpulan."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+node_modules/
+main.js
+.qa-profile/
+test-vault/.obsidian/
+test-vault/Learning/
+coverage/
