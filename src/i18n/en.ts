@@ -170,6 +170,17 @@ export const en = {
   "aiAction": "Action",
   "aiTestedAxis": "Skill being assessed",
   "aiSource": "Source excerpt",
-  "aiFeedback": "Feedback"
+  "aiFeedback": "Feedback",
+  "templates": "Templates",
+  "templatesHelp": "Create ready-to-use Markdown templates for Obsidian Templates or Templater. Existing files are never overwritten.",
+  "templateFolder": "Templates folder",
+  "templateFolderDesc": "Leave empty to use Obsidian’s core Templates folder (or Templates).",
+  "createTemplates": "Create templates",
+  "templatesCreated": "Created templates in",
+  "templatesSkipped": "Skipped existing:",
+  "templatesOfferTitle": "Create Curiosity Learning templates?",
+  "templatesOfferBody": "Create ready-to-use Topic and Inbox templates inside the folder:",
+  "templatesLater": "Later",
+  "templatesCreateNow": "Create templates"
 };
 export type Labels = typeof en;

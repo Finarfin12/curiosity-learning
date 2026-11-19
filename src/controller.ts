@@ -8,10 +8,10 @@ import type { Rating } from "./domain/fsrs";
 import type { Confidence } from "./domain/types";
 
 export class LearningController {
-  constructor(readonly app: App) {}
+  constructor(readonly app: App, private readonly exclude?: (path: string) => boolean) {}
 
   list() {
-    return loadTopics(this.app);
+    return loadTopics(this.app, this.exclude);
   }
 
   change(item: IndexedTopic, transform: (content: string) => string) {

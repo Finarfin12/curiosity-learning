@@ -1,6 +1,7 @@
 import { Notice, PluginSettingTab, Setting } from "obsidian";
 import { folderPath } from "../adapter/noteFactory";
 import { parseNames, propertyFields } from "../domain/learningProperties";
+import { cleanFolder } from "../domain/templateFiles";
 import { buildAiSettingGroup } from "./settingsAi";
 import { labelControl } from "./forms";
 import { refreshSettingTab, resolveVisible, type SettingGroupDef, type SettingItemDef } from "./settingDefinitions";
@@ -68,6 +69,54 @@ export class LearningSettingTab extends PluginSettingTab {
           });
         },
       })),
+    });
+
+    groups.push({
+      type: "group",
+      id: "templates",
+      heading: tr.templates,
+      items: [
+        {
+          id: "templates.help",
+          name: "",
+          desc: tr.templatesHelp,
+          searchable: false,
+          render: () => undefined,
+        },
+        {
+          id: "templates.folder",
+          name: tr.templateFolder,
+          desc: tr.templateFolderDesc,
+          render: setting => {
+            setting.addText(control => {
+              labelControl(setting, control.inputEl);
+              control.setValue(this.plugin.settings.templateFolder);
+              control.inputEl.addEventListener("change", () => {
+                this.plugin.settings.templateFolder = cleanFolder(control.getValue());
+                control.setValue(this.plugin.settings.templateFolder);
+                void this.plugin.saveSettings()
+                  .then(() => this.plugin.refreshTemplateFolder())
+                  .catch(() => new Notice(tr.failed));
+              });
+              void this.plugin.templates.folder().then(folder => {
+                control.setPlaceholder(folder);
+              });
+            });
+          },
+        },
+        {
+          id: "templates.create",
+          name: tr.createTemplates,
+          render: setting => {
+            setting.addButton(button => {
+              labelControl(setting, button.buttonEl);
+              button.setButtonText(tr.createTemplates).onClick(() => {
+                void this.plugin.createTemplates().catch(() => new Notice(tr.failed));
+              });
+            });
+          },
+        },
+      ],
     });
 
     groups.push(buildAiSettingGroup(this.plugin, () => this.redisplay()));

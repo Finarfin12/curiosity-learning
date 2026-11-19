@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.2
+
+- Add automatic Obsidian Templates support (`Curiosity Learning Topic.md` and `Curiosity Learning Inbox.md`) via first-run prompt, **Settings → Templates**, and the **Create templates** command without overwriting existing files.
+- Exclude template files from the Learning Queue and auto-initialize new notes created from Curiosity Learning templates.
+
 ## 0.4.1
 
 - Replace the manual AI model text box with an automatic provider model dropdown across Desktop CLI, Local HTTP, and Cloud API.

@@ -25,6 +25,10 @@ Skor menunjukkan jenis tugas yang sudah diuji dan cara penilaiannya. Peta keyaki
 
 Markdown adalah sumber data utama. Catatan baru memakai `type: learning`, properti datar, dan komentar Markdown tersembunyi untuk ID, skema, tanggal skor, serta rincian kalibrasi. Ubah nama bawaan catatan baru di **Settings → Nama properti**. Jalankan **Migrasikan properti** pada catatan belajar untuk memakai nama terbaru, termasuk dari format lama `cl_*`. Properti tambahan dan teks bebas dipertahankan. Bentrok nama menghentikan migrasi. Agen eksternal dapat mengikuti [kontrak vault](skills-src/curiosity-skill/SKILL.md).
 
+### Templat
+
+Saat pertama kali aktif, Curiosity Learning menawarkan pembuatan dua file templat siap pakai (`Curiosity Learning Topic.md` dan `Curiosity Learning Inbox.md`) di **Folder templat** yang dikonfigurasi (otomatis mengikuti folder plugin inti Templates Obsidian atau `Templates`). Kamu juga bisa membuatnya kapan saja lewat **Settings → Templat → Buat templat** atau perintah **Buat templat**. File yang sudah ada tidak pernah ditimpa, file templat dikecualikan dari Antrean belajar, dan catatan baru yang dibuat dari templat tersebut akan otomatis diinisialisasi dengan ID unik dan metadata tanggal.
+
 ## Prasyarat dan tangkapan browser
 
 - Isi satu judul atau wikilink per baris saat membuat topik atau melalui **Edit prasyarat** di diagnosis. Antrean menampilkan prasyarat yang sudah teruji, belum teruji, hilang, atau ambigu.
@@ -33,7 +37,7 @@ Markdown adalah sumber data utama. Catatan baru memakai `type: learning`, proper
 
 ## Pengungkapan jaringan
 
-Curiosity Learning 0.4.1 bekerja offline secara bawaan. Aktifkan **Pencarian sumber online** saat diperlukan. Di **Cari sumber kredibel**, pilih penyedia, periksa kata kunci, dan tekan **Setujui & cari kata kunci ini**. Penyedia menerima kata kunci yang disetujui. Isi catatan tetap di vault. Permintaan kedua PubMed hanya berisi ID hasil pencarian. Pengecekan DOI manual mengirim DOI ke Crossref. Pengecekan URL manual mengirim judul yang diisi ke Crossref atau Wikipedia sesuai bahasa URL, lalu mencocokkan URL dengan metadata hasil.
+Curiosity Learning 0.4.2 bekerja offline secara bawaan. Aktifkan **Pencarian sumber online** saat diperlukan. Di **Cari sumber kredibel**, pilih penyedia, periksa kata kunci, dan tekan **Setujui & cari kata kunci ini**. Penyedia menerima kata kunci yang disetujui. Isi catatan tetap di vault. Permintaan kedua PubMed hanya berisi ID hasil pencarian. Pengecekan DOI manual mengirim DOI ke Crossref. Pengecekan URL manual mengirim judul yang diisi ke Crossref atau Wikipedia sesuai bahasa URL, lalu mencocokkan URL dengan metadata hasil.
 
 | Penyedia | Tujuan | Data opsional |
 | --- | --- | --- |

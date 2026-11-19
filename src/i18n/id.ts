@@ -171,5 +171,16 @@ export const id: Labels = {
   "aiAction": "Aksi",
   "aiTestedAxis": "Kemampuan yang dinilai",
   "aiSource": "Kutipan sumber",
-  "aiFeedback": "Umpan balik"
+  "aiFeedback": "Umpan balik",
+  "templates": "Templat",
+  "templatesHelp": "Buat file templat Markdown siap pakai untuk plugin inti Templates atau Templater. File yang sudah ada tidak pernah ditimpa.",
+  "templateFolder": "Folder templat",
+  "templateFolderDesc": "Kosongkan untuk memakai folder plugin inti Templates Obsidian (atau Templates).",
+  "createTemplates": "Buat templat",
+  "templatesCreated": "Templat dibuat di",
+  "templatesSkipped": "Dilewati karena sudah ada:",
+  "templatesOfferTitle": "Buat templat Curiosity Learning?",
+  "templatesOfferBody": "Buat templat Topik dan Inbox siap pakai di dalam folder:",
+  "templatesLater": "Nanti",
+  "templatesCreateNow": "Buat templat"
 };

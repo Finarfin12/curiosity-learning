@@ -25,6 +25,10 @@ Scores indicate which tasks were tested and how each was evaluated. The confiden
 
 Markdown is the source of truth. New notes use `type: learning`, flat properties, and a hidden Markdown comment for ID, schema, score dates, and detailed calibration. **Settings → Property names** changes the defaults for new notes. Run **Migrate properties** on a learning note to apply the current names, including conversion from legacy `cl_*` properties. Existing custom properties and prose are retained, and conflicting names prevent migration. External agents can follow the [vault contract](skills-src/curiosity-skill/SKILL.md).
 
+### Templates
+
+On first startup, Curiosity Learning offers to create two ready-to-use templates (`Curiosity Learning Topic.md` and `Curiosity Learning Inbox.md`) inside your configured **Templates folder** (falling back to Obsidian’s core Templates folder or `Templates`). You can also generate them any time from **Settings → Templates → Create templates** or the **Create templates** command. Existing files are never overwritten, template files are excluded from the Learning Queue, and new notes created from these templates are automatically initialized with a unique ID and date metadata.
+
 ## Prerequisites and browser capture
 
 - Add one note title or wikilink per line when creating a topic or using **Edit prerequisites** in the diagnostic workspace. The queue shows whether each linked topic is demonstrated, untested, missing, or ambiguous.
@@ -33,7 +37,7 @@ Markdown is the source of truth. New notes use `type: learning`, flat properties
 
 ## Network disclosure
 
-Curiosity Learning 0.4.1 works offline by default. Enable **Online source lookup** in Settings when you want to search. In **Find credible sources**, choose a provider, review the exact keywords, and press **Approve and search these keywords**. The selected provider receives the approved keywords. The plugin sends no note body. PubMed’s second request contains only returned record IDs. Manual DOI checks send the DOI to Crossref. Manual URL checks send the supplied title to Crossref or the selected language’s Wikipedia and compare the returned metadata with the entered URL.
+Curiosity Learning 0.4.2 works offline by default. Enable **Online source lookup** in Settings when you want to search. In **Find credible sources**, choose a provider, review the exact keywords, and press **Approve and search these keywords**. The selected provider receives the approved keywords. The plugin sends no note body. PubMed’s second request contains only returned record IDs. Manual DOI checks send the DOI to Crossref. Manual URL checks send the supplied title to Crossref or the selected language’s Wikipedia and compare the returned metadata with the entered URL.
 
 | Provider | Destination | Optional data |
 | --- | --- | --- |
