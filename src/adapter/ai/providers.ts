@@ -23,6 +23,11 @@ export const apiDefaults: Record<ApiKind, string> = {
 export const apiLabels: Record<ApiKind, string> = {
   openai: "OpenAI-compatible", anthropic: "Anthropic", gemini: "Gemini API",
 };
+export const apiDefaultModels: Record<ApiKind, string[]> = {
+  openai: ["gpt-4.1-mini", "gpt-4.1", "o4-mini", "o3"],
+  anthropic: ["claude-sonnet-4-5", "claude-opus-4-5", "claude-3-5-haiku-latest"],
+  gemini: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite"],
+};
 
 export function httpProvider(http: HttpClient, kind: LocalKind | ApiKind, base: string, model: string, secret = ""): AiProvider {
   const local = kind === "ollama" || kind === "lmstudio";

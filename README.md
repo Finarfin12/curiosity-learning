@@ -29,7 +29,7 @@ Markdown is the source of truth. New notes use `type: learning`, flat properties
 
 ## Network disclosure
 
-Curiosity Learning 0.4.0 works offline by default. Enable **Online source lookup** in Settings when you want to search. In **Find credible sources**, choose a provider, review the exact keywords, and press **Approve and search these keywords**. The selected provider receives the approved keywords. The plugin sends no note body. PubMed’s second request contains only returned record IDs. Manual DOI checks send the DOI to Crossref. Manual URL checks send the supplied title to Crossref or the selected language’s Wikipedia and compare the returned metadata with the entered URL.
+Curiosity Learning 0.4.1 works offline by default. Enable **Online source lookup** in Settings when you want to search. In **Find credible sources**, choose a provider, review the exact keywords, and press **Approve and search these keywords**. The selected provider receives the approved keywords. The plugin sends no note body. PubMed’s second request contains only returned record IDs. Manual DOI checks send the DOI to Crossref. Manual URL checks send the supplied title to Crossref or the selected language’s Wikipedia and compare the returned metadata with the entered URL.
 
 | Provider | Destination | Optional data |
 | --- | --- | --- |
@@ -43,13 +43,13 @@ Optional credentials are masked in Settings and stored in the vault’s local pl
 
 ## Optional AI
 
-Open **Settings → Curiosity Learning → Optional AI**. Choose **Local CLI**, **Local HTTP**, or **Cloud API**, then set the provider and model. **Off** leaves every manual feature available. **Detect local providers** checks CLI availability on desktop and loopback HTTP services after you click it.
+Open **Settings → Curiosity Learning → Optional AI**. Choose **Local CLI**, **Local HTTP**, or **Cloud API**, then select the provider and pick a model from the **Model name** dropdown (populated automatically per provider). **Off** leaves every manual feature available. **Detect local providers** checks CLI availability on desktop and loopback HTTP services and refreshes the model dropdown after you click it.
 
 | Mode | Configuration |
 | --- | --- |
-| Desktop CLI | Claude Code, Codex CLI, Gemini CLI, or Ollama on the executable PATH. Windows requires a native executable. Gemini CLI uses an isolated workspace and environment-based API authentication. Ollama CLI uses an installed model on the loopback service. |
-| Local HTTP | Ollama at `http://127.0.0.1:11434` or LM Studio at `http://127.0.0.1:1234`, or another loopback port. Specify an installed model. |
-| Cloud API | OpenAI-compatible, Anthropic, or Gemini. Specify the API key and model. OpenAI-compatible accepts an HTTPS API base you trust. |
+| Desktop CLI | Claude Code, Codex CLI, Gemini CLI, or Ollama on the executable PATH. Windows requires a native executable. Gemini CLI uses an isolated workspace and environment-based API authentication. Ollama CLI lists installed models on the loopback service. |
+| Local HTTP | Ollama at `http://127.0.0.1:11434` or LM Studio at `http://127.0.0.1:1234`, or another loopback port. Automatically loads installed models into the dropdown. |
+| Cloud API | OpenAI-compatible, Anthropic, or Gemini. Specify the API key and select a curated or endpoint-reported model from the dropdown. OpenAI-compatible accepts an HTTPS API base you trust. |
 
 In **Diagnose and test understanding**, AI can propose a three-step worked example, a focused diagnostic question, a comparable post-test problem, or a score for the current skill. Review the named provider, action, and context before each send. Review the result again before applying it. Accepted evaluations use the `observed_ai` source and appear as `2 (ai)` or another score in Properties. AI teaching may reference numbered sources already saved with **Find credible sources**. Failed requests return you to the manual workflow.
 

@@ -1,8 +1,9 @@
 import { expect, test, vi } from "vitest";
-import { cliSpecs } from "../src/adapter/ai/cliSpecs";
-import { detectProviders } from "../src/adapter/ai/detector";
+import { cliDefaultModels, cliSpecs } from "../src/adapter/ai/cliSpecs";
+import { detectModelsForProvider, detectProviders, parseOllamaListModels } from "../src/adapter/ai/detector";
 import { makeAiProvider } from "../src/adapter/ai/factory";
 import type { AiHttpRequest } from "../src/adapter/ai/http";
+import { apiDefaultModels } from "../src/adapter/ai/providers";
 import type { CliEnvironment, RunOptions } from "../src/adapter/ai/runner";
 import { redact } from "../src/domain/ai/chain";
 import { LearningAiService, saveAiEvaluation, saveAiTeaching } from "../src/domain/ai/learningAiService";
@@ -181,3 +182,52 @@ test("KT-11: Anthropic, Gemini and LM Studio use the expected request and respon
     expect(await provider.generate({ system: SYSTEM_RULES, context: "{}" })).toBe(synth);
   }
 });
+
+test("KT-11: detectModelsForProvider lists CLI, Local HTTP, and Cloud API models while staying zero-call when off", async () => {
+  const offHttp = { request: vi.fn() };
+  const offCli = cliMock("claude");
+  expect(await detectModelsForProvider(defaultAi, { http: offHttp, cli: offCli.cli }, key)).toEqual([]);
+  expect(offHttp.request).not.toHaveBeenCalled();
+  expect(offCli.run).not.toHaveBeenCalled();
+
+  expect(parseOllamaListModels("NAME ID SIZE MODIFIED\nqwen2.5:7b abc 4.7 GB 2 days ago\nllama3.2:latest def 2.0 GB 1 day ago"))
+    .toEqual(["qwen2.5:7b", "llama3.2:latest"]);
+
+  for (const kind of ["claude", "codex", "gemini"] as const) {
+    const { cli } = cliMock(kind);
+    const models = await detectModelsForProvider({ ...defaultAi, provider: "cli", cli: kind }, { http: offHttp, cli });
+    expect(models).toEqual(cliDefaultModels[kind]);
+  }
+
+  const ollamaCli = cliMock("ollama");
+  expect(await detectModelsForProvider({ ...defaultAi, provider: "cli", cli: "ollama" },
+    { http: offHttp, cli: ollamaCli.cli })).toEqual(["fixture:latest"]);
+
+  const localHttp = vi.fn((req: AiHttpRequest) => {
+    if (req.url.endsWith("/api/tags")) {
+      return Promise.resolve({ status: 200, text: JSON.stringify({ models: [{ name: "qwen2.5:7b" }, { name: "nomic:v1" }] }) });
+    }
+    return Promise.resolve({ status: 200, text: JSON.stringify({ data: [{ id: "deepseek-r1-distill" }] }) });
+  });
+  expect(await detectModelsForProvider({ ...defaultAi, provider: "local", local: "ollama" },
+    { http: { request: localHttp } })).toEqual(["qwen2.5:7b", "nomic:v1"]);
+  expect(await detectModelsForProvider({ ...defaultAi, provider: "local", local: "lmstudio" },
+    { http: { request: localHttp } })).toEqual(["deepseek-r1-distill"]);
+
+  const apiHttp = vi.fn((req: AiHttpRequest) => {
+    if (req.url.includes("/v1beta/models")) {
+      return Promise.resolve({ status: 200, text: JSON.stringify({ models: [{ name: "models/gemini-2.5-pro-exp" }] }) });
+    }
+    return Promise.resolve({ status: 200, text: JSON.stringify({ data: [{ id: "custom-model-1" }] }) });
+  });
+  const openAiModels = await detectModelsForProvider({ ...defaultAi, provider: "api", api: "openai" },
+    { http: { request: apiHttp } }, key);
+  expect(openAiModels).toEqual(["custom-model-1", ...apiDefaultModels.openai]);
+  const geminiModels = await detectModelsForProvider({ ...defaultAi, provider: "api", api: "gemini" },
+    { http: { request: apiHttp } }, key);
+  expect(geminiModels).toEqual(["gemini-2.5-pro-exp", ...apiDefaultModels.gemini]);
+  const anthropicNoKey = await detectModelsForProvider({ ...defaultAi, provider: "api", api: "anthropic" },
+    { http: offHttp }, "");
+  expect(anthropicNoKey).toEqual(apiDefaultModels.anthropic);
+});
+

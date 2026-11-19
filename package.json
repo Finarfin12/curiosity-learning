@@ -1,6 +1,6 @@
 {
   "name": "curiosity-learning",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "type": "module",
   "main": "main.js",
@@ -12,14 +12,14 @@
     "install-test-vault": "node scripts/install-test-vault.mjs"
   },
   "devDependencies": {
-    "obsidian": "^1.8.7",
-    "yaml": "^2.9.1",
-    "typescript": "^5.8.3",
+    "@types/node": "^22.15.17",
     "esbuild": "^0.25.5",
-    "vitest": "^3.2.4",
     "eslint": "^9.39.0",
-    "eslint-plugin-obsidianmd": "^0.3.0",
+    "eslint-plugin-obsidianmd": "^0.5.1",
+    "obsidian": "^1.8.7",
+    "typescript": "^5.8.3",
     "typescript-eslint": "^8.49.0",
-    "@types/node": "^22.15.17"
+    "vitest": "^3.2.4",
+    "yaml": "^2.9.1"
   }
 }

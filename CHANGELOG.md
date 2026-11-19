@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1
+
+- Replace the manual AI model text box with an automatic provider model dropdown across Desktop CLI, Local HTTP, and Cloud API.
+- Adopt declarative `getSettingDefinitions()` for Obsidian 1.13+ settings search and upgrade `eslint-plugin-obsidianmd` to `0.5.1`.
+
 ## 0.4.0
 
 - Add opt-in desktop CLI, loopback HTTP, and cloud API learning providers.

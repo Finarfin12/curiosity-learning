@@ -9,6 +9,13 @@ export const cliNames: Record<CliKind, string> = {
   claude: "Claude Code", codex: "Codex CLI", gemini: "Gemini CLI", ollama: "Ollama CLI",
 };
 
+export const cliDefaultModels: Record<CliKind, string[]> = {
+  claude: ["sonnet", "opus", "haiku", "claude-sonnet-4-5", "claude-opus-4-5", "claude-haiku-4-5"],
+  codex: ["o4-mini", "o3", "gpt-4.1", "gpt-4.1-mini", "codex-mini-latest"],
+  gemini: ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite"],
+  ollama: [],
+};
+
 export const geminiPolicy = JSON.stringify({
   tools: { core: ["curiosity_no_tools"] },
   context: { fileName: [] },

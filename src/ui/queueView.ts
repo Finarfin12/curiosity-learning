@@ -74,7 +74,7 @@ export class LearningQueueView extends ItemView {
       const value = topic.cl_axes[axis];
       const box = grid.createDiv();
       box.createEl("strong", { text: axes[axis] + " · " + tr[axis] });
-      box.createEl("span", { text: (value.score === "not_tested" ? "—" : value.score + "/3") + " · " + tr[value.source] });
+      box.createSpan({ text: (value.score === "not_tested" ? "—" : value.score + "/3") + " · " + tr[value.source] });
     }
     const map = summarize(topic.cl_calibration);
     new Setting(root).setName(tr.map).setHeading();

@@ -29,7 +29,7 @@ Markdown adalah sumber data utama. Catatan baru memakai `type: learning`, proper
 
 ## Pengungkapan jaringan
 
-Curiosity Learning 0.4.0 bekerja offline secara bawaan. Aktifkan **Pencarian sumber online** saat diperlukan. Di **Cari sumber kredibel**, pilih penyedia, periksa kata kunci, dan tekan **Setujui & cari kata kunci ini**. Penyedia menerima kata kunci yang disetujui. Isi catatan tetap di vault. Permintaan kedua PubMed hanya berisi ID hasil pencarian. Pengecekan DOI manual mengirim DOI ke Crossref. Pengecekan URL manual mengirim judul yang diisi ke Crossref atau Wikipedia sesuai bahasa URL, lalu mencocokkan URL dengan metadata hasil.
+Curiosity Learning 0.4.1 bekerja offline secara bawaan. Aktifkan **Pencarian sumber online** saat diperlukan. Di **Cari sumber kredibel**, pilih penyedia, periksa kata kunci, dan tekan **Setujui & cari kata kunci ini**. Penyedia menerima kata kunci yang disetujui. Isi catatan tetap di vault. Permintaan kedua PubMed hanya berisi ID hasil pencarian. Pengecekan DOI manual mengirim DOI ke Crossref. Pengecekan URL manual mengirim judul yang diisi ke Crossref atau Wikipedia sesuai bahasa URL, lalu mencocokkan URL dengan metadata hasil.
 
 | Penyedia | Tujuan | Data opsional |
 | --- | --- | --- |
@@ -43,13 +43,13 @@ Kunci disamarkan di Settings dan disimpan di konfigurasi plugin lokal dalam vaul
 
 ## AI opsional
 
-Buka **Settings → Curiosity Learning → AI opsional**. Pilih **CLI lokal**, **HTTP lokal**, atau **API cloud**, lalu tentukan penyedia dan model. Mode **Nonaktif** tetap menyediakan seluruh alat manual. **Deteksi penyedia lokal** memeriksa CLI di desktop dan layanan HTTP loopback setelah tombol ditekan.
+Buka **Settings → Curiosity Learning → AI opsional**. Pilih **CLI lokal**, **HTTP lokal**, atau **API cloud**, lalu tentukan penyedia dan pilih model dari dropdown **Nama model** (terdeteksi otomatis untuk tiap penyedia). Mode **Nonaktif** tetap menyediakan seluruh alat manual. **Deteksi penyedia lokal** memeriksa CLI di desktop dan layanan HTTP loopback sekaligus menyegarkan daftar model di dropdown setelah tombol ditekan.
 
 | Mode | Pengaturan |
 | --- | --- |
-| CLI desktop | Claude Code, Codex CLI, Gemini CLI, atau Ollama melalui PATH. Windows memerlukan executable native. Gemini CLI memakai folder terisolasi dan autentikasi API dari environment. Ollama CLI memakai model terpasang pada layanan loopback. |
-| HTTP lokal | Ollama di `http://127.0.0.1:11434` atau LM Studio di `http://127.0.0.1:1234`, atau port loopback lain. Isi model yang terpasang. |
-| API cloud | OpenAI-compatible, Anthropic, atau Gemini. Isi kunci API dan model. OpenAI-compatible menerima alamat dasar API HTTPS yang kamu percayai. |
+| CLI desktop | Claude Code, Codex CLI, Gemini CLI, atau Ollama melalui PATH. Windows memerlukan executable native. Gemini CLI memakai folder terisolasi dan autentikasi API dari environment. Ollama CLI mendeteksi model terpasang pada layanan loopback. |
+| HTTP lokal | Ollama di `http://127.0.0.1:11434` atau LM Studio di `http://127.0.0.1:1234`, atau port loopback lain. Otomatis memuat model yang terpasang ke dropdown. |
+| API cloud | OpenAI-compatible, Anthropic, atau Gemini. Isi kunci API dan pilih model bawaan atau model dari endpoint pada dropdown. OpenAI-compatible menerima alamat dasar API HTTPS yang kamu percayai. |
 
 Dalam **Diagnosis dan uji pemahaman**, AI dapat mengusulkan contoh tiga langkah, satu pertanyaan diagnosis, soal uji lagi yang setara, atau penilaian atas kemampuan yang diuji. Periksa penyedia, aksi, dan konteks sebelum setiap pengiriman. Tinjau hasilnya sebelum menerapkan. Penilaian yang diterima dicatat sebagai `observed_ai` dan tampil seperti `2 (ai)` di Properties. Penjelasan AI dapat merujuk pada nomor sumber yang sudah disimpan lewat **Cari sumber kredibel**. Jika provider gagal, lanjutkan dengan alur manual.
 
