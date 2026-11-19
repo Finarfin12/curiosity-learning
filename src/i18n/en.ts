@@ -146,7 +146,7 @@ export const en = {
   "aiKey": "API key",
   "aiKeyHelp": "The key uses Obsidian secret storage where available. Older versions retain it for this session.",
   "aiModel": "Model name",
-  "aiDetect": "Detect local providers",
+  "aiDetect": "Check connection and detect models",
   "desktopOnly": "Desktop only",
   "unavailable": "Unavailable",
   "available": "Available",
@@ -181,6 +181,16 @@ export const en = {
   "templatesOfferTitle": "Create Curiosity Learning templates?",
   "templatesOfferBody": "Create ready-to-use Topic and Inbox templates inside the folder:",
   "templatesLater": "Later",
-  "templatesCreateNow": "Create templates"
+  "templatesCreateNow": "Create templates",
+  "aiChecking": "Checking connection…",
+  "aiConnected": "Connected",
+  "aiNotConnected": "Not connected",
+  "aiModelsDetected": "models detected",
+  "aiModelsAvailable": "models available",
+  "aiNoModels": "— No models detected —",
+  "aiNeedsKey": "— No models detected (enter API key) —",
+  "aiKeyRequired": "API key required",
+  "aiConnectedTo": "Connected to",
+  "aiDisconnectedFrom": "is not connected (unavailable)"
 };
 export type Labels = typeof en;

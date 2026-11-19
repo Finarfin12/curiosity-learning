@@ -1,9 +1,17 @@
 import { expect, test, vi } from "vitest";
-import { cliDefaultModels, cliSpecs } from "../src/adapter/ai/cliSpecs";
-import { detectModelsForProvider, detectProviders, parseOllamaListModels } from "../src/adapter/ai/detector";
+import { cliSpecs } from "../src/adapter/ai/cliSpecs";
+import {
+  checkActiveProvider,
+  detectModelsForProvider,
+  detectProviders,
+  parseClaudeBinaryModels,
+  parseClaudeHelpAliases,
+  parseCodexCacheModels,
+  parseCodexConfigModel,
+  parseOllamaListModels,
+} from "../src/adapter/ai/detector";
 import { makeAiProvider } from "../src/adapter/ai/factory";
 import type { AiHttpRequest } from "../src/adapter/ai/http";
-import { apiDefaultModels } from "../src/adapter/ai/providers";
 import type { CliEnvironment, RunOptions } from "../src/adapter/ai/runner";
 import { redact } from "../src/domain/ai/chain";
 import { LearningAiService, saveAiEvaluation, saveAiTeaching } from "../src/domain/ai/learningAiService";
@@ -183,7 +191,7 @@ test("KT-11: Anthropic, Gemini and LM Studio use the expected request and respon
   }
 });
 
-test("KT-11: detectModelsForProvider lists CLI, Local HTTP, and Cloud API models while staying zero-call when off", async () => {
+test("KT-11: real dynamic model & connection detection without hardcoded lists", async () => {
   const offHttp = { request: vi.fn() };
   const offCli = cliMock("claude");
   expect(await detectModelsForProvider(defaultAi, { http: offHttp, cli: offCli.cli }, key)).toEqual([]);
@@ -192,42 +200,126 @@ test("KT-11: detectModelsForProvider lists CLI, Local HTTP, and Cloud API models
 
   expect(parseOllamaListModels("NAME ID SIZE MODIFIED\nqwen2.5:7b abc 4.7 GB 2 days ago\nllama3.2:latest def 2.0 GB 1 day ago"))
     .toEqual(["qwen2.5:7b", "llama3.2:latest"]);
+  expect(parseCodexConfigModel('model = "gpt-6.1-terra"\n')).toBe("gpt-6.1-terra");
+  expect(parseCodexCacheModels(JSON.stringify({
+    models: [
+      { slug: "gpt-6.2-sol", visibility: "list" },
+      { slug: "gpt-reserve", visibility: "hide" },
+      { slug: "gpt-6.2-astra", visibility: "list" },
+    ],
+  }))).toEqual(["gpt-6.2-sol", "gpt-6.2-astra"]);
+  expect(parseClaudeHelpAliases("--model <model> Provide an alias (e.g. 'fable', 'opus', or 'sonnet')"))
+    .toEqual(["fable", "opus", "sonnet"]);
+  expect(parseClaudeBinaryModels("xx claude-opus-4-6 yy claude-sonnet-5-5 zz claude-opus-5-5 claude-opus-4-v1"))
+    .toEqual(["claude-sonnet-5-5", "claude-opus-5-5", "claude-opus-4-6"]);
 
-  for (const kind of ["claude", "codex", "gemini"] as const) {
-    const { cli } = cliMock(kind);
-    const models = await detectModelsForProvider({ ...defaultAi, provider: "cli", cli: kind }, { http: offHttp, cli });
-    expect(models).toEqual(cliDefaultModels[kind]);
-  }
+  // Codex CLI dynamic detection from ~/.codex/config.toml + models_cache.json
+  const codexBase = cliMock("codex");
+  const codexCli: CliEnvironment = {
+    ...codexBase.cli,
+    homeDir: () => "/home/qa",
+    readFile: (path: string) => {
+      if (path.endsWith("config.toml")) return Promise.resolve('model = "gpt-6.1-terra"');
+      if (path.endsWith("models_cache.json")) {
+        return Promise.resolve(JSON.stringify({
+          models: [
+            { slug: "gpt-6.2-sol", visibility: "list" },
+            { slug: "gpt-6.2-astra", visibility: "list" },
+            { slug: "gpt-hidden", visibility: "hide" },
+          ],
+        }));
+      }
+      return Promise.resolve(null);
+    },
+  };
+  const codexCheck = await checkActiveProvider({ ...defaultAi, provider: "cli", cli: "codex" }, { http: offHttp, cli: codexCli });
+  expect(codexCheck).toEqual({
+    label: "Codex CLI", connected: true, status: "available",
+    models: ["gpt-6.1-terra", "gpt-6.2-sol", "gpt-6.2-astra"],
+  });
 
+  // Claude Code dynamic detection from --help + binary
+  const claudeBase = cliMock("claude");
+  const claudeCli: CliEnvironment = {
+    ...claudeBase.cli,
+    runner: {
+      run: (file, args, opts) => {
+        if (args.includes("--help")) {
+          return Promise.resolve({
+            code: 0,
+            stdout: cliSpecs.claude.guards.join("\n") + "\n--model <model> (e.g. 'fable', 'opus', or 'sonnet')",
+          });
+        }
+        return claudeBase.cli.runner.run(file, args, opts);
+      },
+    },
+    homeDir: () => "/home/qa",
+    readFile: (path: string) => {
+      if (path === "/fixture/claude") return Promise.resolve("bin claude-opus-5-5 claude-sonnet-5-5 claude-opus-4-v1");
+      return Promise.resolve(null);
+    },
+  };
+  const claudeCheck = await checkActiveProvider({ ...defaultAi, provider: "cli", cli: "claude" }, { http: offHttp, cli: claudeCli });
+  expect(claudeCheck).toEqual({
+    label: "Claude Code", connected: true, status: "available",
+    models: ["fable", "opus", "sonnet", "claude-sonnet-5-5", "claude-opus-5-5"],
+  });
+
+  // Unavailable CLI returns empty models []
+  const missingCli: CliEnvironment = {
+    ...codexBase.cli,
+    executable: () => Promise.resolve(null),
+  };
+  const geminiUnavailable = await checkActiveProvider({ ...defaultAi, provider: "cli", cli: "gemini" }, { http: offHttp, cli: missingCli });
+  expect(geminiUnavailable).toEqual({ label: "Gemini CLI", connected: false, status: "unavailable", models: [] });
+
+  // Ollama CLI reads ollama list
   const ollamaCli = cliMock("ollama");
   expect(await detectModelsForProvider({ ...defaultAi, provider: "cli", cli: "ollama" },
     { http: offHttp, cli: ollamaCli.cli })).toEqual(["fixture:latest"]);
 
+  // Local HTTP (Ollama + LM Studio) and unreachable service
   const localHttp = vi.fn((req: AiHttpRequest) => {
     if (req.url.endsWith("/api/tags")) {
       return Promise.resolve({ status: 200, text: JSON.stringify({ models: [{ name: "qwen2.5:7b" }, { name: "nomic:v1" }] }) });
     }
     return Promise.resolve({ status: 200, text: JSON.stringify({ data: [{ id: "deepseek-r1-distill" }] }) });
   });
-  expect(await detectModelsForProvider({ ...defaultAi, provider: "local", local: "ollama" },
-    { http: { request: localHttp } })).toEqual(["qwen2.5:7b", "nomic:v1"]);
-  expect(await detectModelsForProvider({ ...defaultAi, provider: "local", local: "lmstudio" },
-    { http: { request: localHttp } })).toEqual(["deepseek-r1-distill"]);
+  expect(await checkActiveProvider({ ...defaultAi, provider: "local", local: "ollama" },
+    { http: { request: localHttp } })).toEqual({
+    label: "Ollama", connected: true, status: "available", models: ["qwen2.5:7b", "nomic:v1"],
+  });
+  expect(await checkActiveProvider({ ...defaultAi, provider: "local", local: "lmstudio" },
+    { http: { request: localHttp } })).toEqual({
+    label: "LM Studio", connected: true, status: "available", models: ["deepseek-r1-distill"],
+  });
+  const downHttp = { request: vi.fn(() => Promise.reject(new Error("ECONNREFUSED"))) };
+  expect(await checkActiveProvider({ ...defaultAi, provider: "local", local: "ollama" }, { http: downHttp }))
+    .toEqual({ label: "Ollama", connected: false, status: "unavailable", models: [] });
+
+  // Cloud API: empty key -> needsKey & 0 network calls; valid key -> endpoint models only; 401 -> unavailable & []
+  const noKeyCheck = await checkActiveProvider({ ...defaultAi, provider: "api", api: "openai" }, { http: offHttp }, "");
+  expect(noKeyCheck).toEqual({ label: "OpenAI-compatible", connected: false, status: "needsKey", models: [] });
+  expect(offHttp.request).not.toHaveBeenCalled();
 
   const apiHttp = vi.fn((req: AiHttpRequest) => {
     if (req.url.includes("/v1beta/models")) {
-      return Promise.resolve({ status: 200, text: JSON.stringify({ models: [{ name: "models/gemini-2.5-pro-exp" }] }) });
+      return Promise.resolve({ status: 200, text: JSON.stringify({ models: [{ name: "models/gemini-3-pro" }] }) });
     }
-    return Promise.resolve({ status: 200, text: JSON.stringify({ data: [{ id: "custom-model-1" }] }) });
+    if (req.headers?.["x-api-key"]) {
+      return Promise.resolve({ status: 200, text: JSON.stringify({ data: [{ id: "claude-opus-5-5" }] }) });
+    }
+    return Promise.resolve({ status: 200, text: JSON.stringify({ data: [{ id: "gpt-6.2-sol" }] }) });
   });
-  const openAiModels = await detectModelsForProvider({ ...defaultAi, provider: "api", api: "openai" },
-    { http: { request: apiHttp } }, key);
-  expect(openAiModels).toEqual(["custom-model-1", ...apiDefaultModels.openai]);
-  const geminiModels = await detectModelsForProvider({ ...defaultAi, provider: "api", api: "gemini" },
-    { http: { request: apiHttp } }, key);
-  expect(geminiModels).toEqual(["gemini-2.5-pro-exp", ...apiDefaultModels.gemini]);
-  const anthropicNoKey = await detectModelsForProvider({ ...defaultAi, provider: "api", api: "anthropic" },
-    { http: offHttp }, "");
-  expect(anthropicNoKey).toEqual(apiDefaultModels.anthropic);
+  expect(await checkActiveProvider({ ...defaultAi, provider: "api", api: "openai" }, { http: { request: apiHttp } }, key))
+    .toEqual({ label: "OpenAI-compatible", connected: true, status: "available", models: ["gpt-6.2-sol"] });
+  expect(await checkActiveProvider({ ...defaultAi, provider: "api", api: "anthropic" }, { http: { request: apiHttp } }, key))
+    .toEqual({ label: "Anthropic", connected: true, status: "available", models: ["claude-opus-5-5"] });
+  expect(await checkActiveProvider({ ...defaultAi, provider: "api", api: "gemini" }, { http: { request: apiHttp } }, key))
+    .toEqual({ label: "Gemini API", connected: true, status: "available", models: ["gemini-3-pro"] });
+
+  const rejectedHttp = { request: vi.fn(() => Promise.resolve({ status: 401, text: '{"error":"unauthorized"}' })) };
+  expect(await checkActiveProvider({ ...defaultAi, provider: "api", api: "openai" }, { http: rejectedHttp }, key))
+    .toEqual({ label: "OpenAI-compatible", connected: false, status: "unavailable", models: [] });
 });
 

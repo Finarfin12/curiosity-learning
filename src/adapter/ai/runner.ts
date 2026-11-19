@@ -21,6 +21,9 @@ export interface CliEnvironment {
   runner: ProcessRunner;
   executable(kind: CliKind): Promise<string | null>;
   workspace(): Promise<Workspace>;
+  readFile?(filePath: string, encoding?: "utf8" | "latin1"): Promise<string | null>;
+  homeDir?(): string;
+  env?(name: string): string | undefined;
 }
 
 export function desktopCli(): CliEnvironment {
@@ -102,6 +105,22 @@ export function desktopCli(): CliEnvironment {
           await fs.promises.rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
         },
       };
+    },
+    async readFile(filePath, encoding = "utf8") {
+      const fs = native("fs") as typeof import("fs");
+      try {
+        return await fs.promises.readFile(filePath, { encoding });
+      } catch {
+        return null;
+      }
+    },
+    homeDir() {
+      const os = native("os") as typeof import("os");
+      return os.homedir();
+    },
+    env(name) {
+      const runtime = native("process") as typeof import("process");
+      return runtime.env[name];
     },
   };
 }

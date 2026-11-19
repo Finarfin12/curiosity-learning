@@ -37,7 +37,7 @@ Saat pertama kali aktif, Curiosity Learning menawarkan pembuatan dua file templa
 
 ## Pengungkapan jaringan
 
-Curiosity Learning 0.4.2 bekerja offline secara bawaan. Aktifkan **Pencarian sumber online** saat diperlukan. Di **Cari sumber kredibel**, pilih penyedia, periksa kata kunci, dan tekan **Setujui & cari kata kunci ini**. Penyedia menerima kata kunci yang disetujui. Isi catatan tetap di vault. Permintaan kedua PubMed hanya berisi ID hasil pencarian. Pengecekan DOI manual mengirim DOI ke Crossref. Pengecekan URL manual mengirim judul yang diisi ke Crossref atau Wikipedia sesuai bahasa URL, lalu mencocokkan URL dengan metadata hasil.
+Curiosity Learning 0.4.3 bekerja offline secara bawaan. Aktifkan **Pencarian sumber online** saat diperlukan. Di **Cari sumber kredibel**, pilih penyedia, periksa kata kunci, dan tekan **Setujui & cari kata kunci ini**. Penyedia menerima kata kunci yang disetujui. Isi catatan tetap di vault. Permintaan kedua PubMed hanya berisi ID hasil pencarian. Pengecekan DOI manual mengirim DOI ke Crossref. Pengecekan URL manual mengirim judul yang diisi ke Crossref atau Wikipedia sesuai bahasa URL, lalu mencocokkan URL dengan metadata hasil.
 
 | Penyedia | Tujuan | Data opsional |
 | --- | --- | --- |
@@ -51,13 +51,13 @@ Kunci disamarkan di Settings dan disimpan di konfigurasi plugin lokal dalam vaul
 
 ## AI opsional
 
-Buka **Settings → Curiosity Learning → AI opsional**. Pilih **CLI lokal**, **HTTP lokal**, atau **API cloud**, lalu tentukan penyedia dan pilih model dari dropdown **Nama model** (terdeteksi otomatis untuk tiap penyedia). Mode **Nonaktif** tetap menyediakan seluruh alat manual. **Deteksi penyedia lokal** memeriksa CLI di desktop dan layanan HTTP loopback sekaligus menyegarkan daftar model di dropdown setelah tombol ditekan.
+Buka **Settings → Curiosity Learning → AI opsional**. Pilih **CLI lokal**, **HTTP lokal**, atau **API cloud**, lalu tentukan penyedia dan pilih model dari dropdown **Nama model** (dideteksi langsung dari penyedia aktif tanpa daftar model hardcode). Status koneksi tampil di bawah **Nama model**, dan mengganti penyedia, kredensial, atau menekan **Cek koneksi dan deteksi model** memunculkan notifikasi status koneksi. Mode **Nonaktif** tetap menyediakan seluruh alat manual.
 
 | Mode | Pengaturan |
 | --- | --- |
-| CLI desktop | Claude Code, Codex CLI, Gemini CLI, atau Ollama melalui PATH. Windows memerlukan executable native. Gemini CLI memakai folder terisolasi dan autentikasi API dari environment. Ollama CLI mendeteksi model terpasang pada layanan loopback. |
-| HTTP lokal | Ollama di `http://127.0.0.1:11434` atau LM Studio di `http://127.0.0.1:1234`, atau port loopback lain. Otomatis memuat model yang terpasang ke dropdown. |
-| API cloud | OpenAI-compatible, Anthropic, atau Gemini. Isi kunci API dan pilih model bawaan atau model dari endpoint pada dropdown. OpenAI-compatible menerima alamat dasar API HTTPS yang kamu percayai. |
+| CLI desktop | Claude Code, Codex CLI, Gemini CLI, atau Ollama melalui PATH. Windows memerlukan executable native. Daftar model dideteksi langsung dari CLI yang terpasang (`~/.codex/models_cache.json`, `--help`/binary Claude, konfigurasi/binary Gemini CLI, atau `ollama list`). CLI yang tidak tersedia menampilkan daftar kosong. |
+| HTTP lokal | Ollama di `http://127.0.0.1:11434` atau LM Studio di `http://127.0.0.1:1234`, atau port loopback lain. Memuat model langsung dari `/api/tags` atau `/v1/models`. |
+| API cloud | OpenAI-compatible, Anthropic, atau Gemini. Isi kunci API untuk memuat daftar model langsung dari endpoint `/v1/models` atau `/v1beta/models` penyedia. OpenAI-compatible menerima alamat dasar API HTTPS yang kamu percayai. |
 
 Dalam **Diagnosis dan uji pemahaman**, AI dapat mengusulkan contoh tiga langkah, satu pertanyaan diagnosis, soal uji lagi yang setara, atau penilaian atas kemampuan yang diuji. Periksa penyedia, aksi, dan konteks sebelum setiap pengiriman. Tinjau hasilnya sebelum menerapkan. Penilaian yang diterima dicatat sebagai `observed_ai` dan tampil seperti `2 (ai)` di Properties. Penjelasan AI dapat merujuk pada nomor sumber yang sudah disimpan lewat **Cari sumber kredibel**. Jika provider gagal, lanjutkan dengan alur manual.
 

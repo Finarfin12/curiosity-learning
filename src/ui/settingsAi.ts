@@ -1,16 +1,23 @@
 import { Notice, Setting } from "obsidian";
-import { detectModelsForProvider, detectProviders, type DetectedProvider } from "../adapter/ai/detector";
-import { cliDefaultModels, cliNames } from "../adapter/ai/cliSpecs";
-import { apiDefaultModels, apiLabels, localDefaults } from "../adapter/ai/providers";
+import {
+  checkActiveProvider,
+  detectProviders,
+  type DetectedProvider,
+  type ProviderCheckResult,
+} from "../adapter/ai/detector";
+import { cliNames } from "../adapter/ai/cliSpecs";
+import { apiLabels, localDefaults } from "../adapter/ai/providers";
 import { normalizeAi, type AiSettings } from "../domain/ai/types";
+import type { Labels } from "../i18n/en";
 import type LearningPlugin from "../main";
 import { labelControl } from "./forms";
 import { resolveVisible, type SettingGroupDef, type SettingItemDef } from "./settingDefinitions";
 
 interface AiUiCache {
   detected: DetectedProvider[];
-  modelsBySlot: Map<string, string[]>;
+  checksBySlot: Map<string, ProviderCheckResult>;
   detectToken: number;
+  notifyOnNextRender: boolean;
 }
 
 const cacheByPlugin = new WeakMap<LearningPlugin, AiUiCache>();
@@ -18,7 +25,7 @@ const cacheByPlugin = new WeakMap<LearningPlugin, AiUiCache>();
 function getUiCache(plugin: LearningPlugin): AiUiCache {
   let state = cacheByPlugin.get(plugin);
   if (!state) {
-    state = { detected: [], modelsBySlot: new Map(), detectToken: 0 };
+    state = { detected: [], checksBySlot: new Map(), detectToken: 0, notifyOnNextRender: false };
     cacheByPlugin.set(plugin, state);
   }
   return state;
@@ -31,22 +38,40 @@ function providerSlot(settings: AiSettings): string {
   return "off";
 }
 
-function initialModelsFor(settings: AiSettings, cache: AiUiCache): string[] {
-  const cached = cache.modelsBySlot.get(providerSlot(settings));
-  if (cached && cached.length) return cached;
-  if (settings.provider === "cli") return [...cliDefaultModels[settings.cli]];
-  if (settings.provider === "api") return [...apiDefaultModels[settings.api]];
-  return [];
+function statusLine(check: ProviderCheckResult | undefined, tr: Labels): string {
+  if (!check) return tr.aiChecking;
+  if (check.connected) return `${tr.aiConnected} · ${check.models.length} ${tr.aiModelsAvailable}`;
+  if (check.status === "needsKey") return `${tr.aiNotConnected} · ${tr.aiKeyRequired}`;
+  if (check.status === "desktopOnly") return `${tr.aiNotConnected} · ${tr.desktopOnly}`;
+  return `${tr.aiNotConnected} · ${tr.unavailable}`;
 }
 
-function applyModelOptions(selectEl: HTMLSelectElement, models: string[], current: string, emptyLabel: string): string {
-  selectEl.empty();
-  if (!models.length) {
-    const value = current || "";
-    selectEl.createEl("option", { text: value || emptyLabel, value });
-    selectEl.value = value;
-    return value;
+function notifyConnection(check: ProviderCheckResult, tr: Labels): void {
+  if (check.connected) {
+    new Notice(`${tr.aiConnectedTo} ${check.label} (${check.models.length} ${tr.aiModelsDetected})`);
+  } else if (check.status === "needsKey") {
+    new Notice(`${check.label}: ${tr.aiNotConnected} (${tr.aiKeyRequired})`);
+  } else {
+    new Notice(`${check.label} ${tr.aiDisconnectedFrom}`);
   }
+}
+
+function applyModelOptions(
+  selectEl: HTMLSelectElement,
+  check: ProviderCheckResult | undefined,
+  current: string,
+  tr: Labels,
+): string {
+  selectEl.empty();
+  const models = check?.models ?? [];
+  if (!models.length) {
+    const placeholder = check?.status === "needsKey" ? tr.aiNeedsKey : (check ? tr.aiNoModels : tr.aiChecking);
+    selectEl.createEl("option", { text: placeholder, value: "" });
+    selectEl.value = "";
+    selectEl.disabled = true;
+    return "";
+  }
+  selectEl.disabled = false;
   const chosen = models.includes(current) ? current : models[0];
   for (const model of models) {
     selectEl.createEl("option", { text: model, value: model });
@@ -55,11 +80,20 @@ function applyModelOptions(selectEl: HTMLSelectElement, models: string[], curren
   return chosen;
 }
 
+function formatDetectedProvider(provider: DetectedProvider, tr: Labels): string {
+  const head = `${provider.label} · ${tr[provider.status]}`;
+  if (provider.status !== "available" || !provider.models.length) return head;
+  const preview = provider.models.slice(0, 6).join(", ");
+  const extra = provider.models.length > 6 ? ` (+${provider.models.length - 6})` : "";
+  return `${head} · ${preview}${extra}`;
+}
+
 export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void): SettingGroupDef {
   const tr = plugin.labels;
   const cache = getUiCache(plugin);
   const settings = plugin.settings.ai;
   let activeModelSelect: HTMLSelectElement | null = null;
+  let activeModelDesc: HTMLElement | null = null;
 
   const update = (patch: Partial<AiSettings>, refresh = false) => {
     plugin.settings.ai = normalizeAi({ ...plugin.settings.ai, ...patch });
@@ -67,20 +101,28 @@ export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void
     if (refresh) rerender();
   };
 
-  const syncModels = async () => {
+  const syncActiveProvider = async (notify: boolean) => {
     const current = plugin.settings.ai;
     if (current.provider === "off") return;
     const token = ++cache.detectToken;
     const slot = providerSlot(current);
-    const models = await detectModelsForProvider(current, plugin.aiDependencies, plugin.getAiKey());
-    cache.modelsBySlot.set(slot, models);
+    if (activeModelDesc) activeModelDesc.setText(tr.aiChecking);
+    const result = await checkActiveProvider(current, plugin.aiDependencies, plugin.getAiKey());
+    cache.checksBySlot.set(slot, result);
     if (token !== cache.detectToken) return;
+    const models = result.models;
     if (models.length && (!current.model || !models.includes(current.model))) {
       update({ model: models[0] }, false);
+    } else if (!models.length && current.model) {
+      update({ model: "" }, false);
     }
     if (activeModelSelect) {
-      applyModelOptions(activeModelSelect, models, plugin.settings.ai.model, tr.choose);
+      applyModelOptions(activeModelSelect, result, plugin.settings.ai.model, tr);
     }
+    if (activeModelDesc) {
+      activeModelDesc.setText(statusLine(result, tr));
+    }
+    if (notify) notifyConnection(result, tr);
   };
 
   const items: SettingItemDef[] = [
@@ -95,10 +137,8 @@ export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void
             .setValue(settings.provider)
             .onChange(value => {
               const nextMode = value as AiSettings["provider"];
-              const nextSettings = normalizeAi({ ...plugin.settings.ai, provider: nextMode });
-              const candidates = initialModelsFor(nextSettings, cache);
-              const nextModel = candidates.length && !candidates.includes(nextSettings.model) ? candidates[0] : nextSettings.model;
-              update({ provider: nextMode, model: nextModel }, true);
+              cache.notifyOnNextRender = nextMode !== "off";
+              update({ provider: nextMode }, true);
             });
         });
       },
@@ -112,11 +152,8 @@ export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void
         setting.addDropdown(component => {
           labelControl(setting, component.selectEl);
           component.addOptions(cliNames).setValue(settings.cli).onChange(value => {
-            const nextCli = value as AiSettings["cli"];
-            const nextSettings = normalizeAi({ ...plugin.settings.ai, cli: nextCli });
-            const candidates = initialModelsFor(nextSettings, cache);
-            const nextModel = candidates.length && !candidates.includes(nextSettings.model) ? candidates[0] : nextSettings.model;
-            update({ cli: nextCli, model: nextModel }, true);
+            cache.notifyOnNextRender = true;
+            update({ cli: value as AiSettings["cli"] }, true);
           });
         });
       },
@@ -129,7 +166,10 @@ export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void
         setting.addDropdown(component => {
           labelControl(setting, component.selectEl);
           component.addOptions({ ollama: "Ollama", lmstudio: "LM Studio" }).setValue(settings.local)
-            .onChange(value => update({ local: value as AiSettings["local"], localUrl: "" }, true));
+            .onChange(value => {
+              cache.notifyOnNextRender = true;
+              update({ local: value as AiSettings["local"], localUrl: "" }, true);
+            });
         });
       },
     },
@@ -143,7 +183,7 @@ export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void
           component.setValue(settings.localUrl).setPlaceholder(localDefaults[settings.local]);
           component.inputEl.addEventListener("change", () => {
             update({ localUrl: component.getValue().trim() }, false);
-            void syncModels();
+            void syncActiveProvider(true);
           });
         });
       },
@@ -156,11 +196,8 @@ export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void
         setting.addDropdown(component => {
           labelControl(setting, component.selectEl);
           component.addOptions(apiLabels).setValue(settings.api).onChange(value => {
-            const nextApi = value as AiSettings["api"];
-            const nextSettings = normalizeAi({ ...plugin.settings.ai, api: nextApi });
-            const candidates = initialModelsFor(nextSettings, cache);
-            const nextModel = candidates.length && !candidates.includes(nextSettings.model) ? candidates[0] : nextSettings.model;
-            update({ api: nextApi, model: nextModel }, true);
+            cache.notifyOnNextRender = true;
+            update({ api: value as AiSettings["api"] }, true);
           });
         });
       },
@@ -175,7 +212,7 @@ export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void
           component.setValue(settings.apiUrl).setPlaceholder("https://api.openai.com");
           component.inputEl.addEventListener("change", () => {
             update({ apiUrl: component.getValue().trim() }, false);
-            void syncModels();
+            void syncActiveProvider(true);
           });
         });
       },
@@ -193,7 +230,7 @@ export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void
           component.inputEl.autocomplete = "off";
           component.inputEl.addEventListener("change", () => {
             plugin.setAiKey(component.getValue().trim());
-            void syncModels();
+            void syncActiveProvider(true);
           });
         });
       },
@@ -201,27 +238,29 @@ export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void
     {
       id: "ai.model",
       name: tr.aiModel,
+      desc: statusLine(cache.checksBySlot.get(providerSlot(settings)), tr),
       visible: () => plugin.settings.ai.provider !== "off",
       render: setting => {
+        activeModelDesc = setting.descEl;
         setting.addDropdown(component => {
           activeModelSelect = component.selectEl;
           labelControl(setting, component.selectEl);
-          const initial = initialModelsFor(plugin.settings.ai, cache);
-          const chosen = applyModelOptions(component.selectEl, initial, plugin.settings.ai.model, tr.choose);
+          const cached = cache.checksBySlot.get(providerSlot(plugin.settings.ai));
+          const chosen = applyModelOptions(component.selectEl, cached, plugin.settings.ai.model, tr);
           if (chosen && chosen !== plugin.settings.ai.model) {
             update({ model: chosen }, false);
           }
           component.onChange(model => update({ model }, false));
-          void syncModels();
+          const shouldNotify = cache.notifyOnNextRender;
+          cache.notifyOnNextRender = false;
+          void syncActiveProvider(shouldNotify);
         });
       },
     },
     {
       id: "ai.detect",
       name: tr.aiDetect,
-      desc: cache.detected.map(provider =>
-        provider.label + " · " + tr[provider.status] + (provider.models.length ? " · " + provider.models.join(", ") : ""),
-      ).join(" | ") || undefined,
+      desc: cache.detected.map(provider => formatDetectedProvider(provider, tr)).join(" | ") || undefined,
       render: setting => {
         setting.addButton(button => {
           labelControl(setting, button.buttonEl);
@@ -230,15 +269,18 @@ export function buildAiSettingGroup(plugin: LearningPlugin, rerender: () => void
           button.onClick(async () => {
             button.setDisabled(true);
             try {
-              const [providers, models] = await Promise.all([
+              const [providers, active] = await Promise.all([
                 detectProviders(plugin.settings.ai, plugin.aiDependencies),
-                detectModelsForProvider(plugin.settings.ai, plugin.aiDependencies, plugin.getAiKey()),
+                checkActiveProvider(plugin.settings.ai, plugin.aiDependencies, plugin.getAiKey()),
               ]);
               cache.detected = providers;
-              cache.modelsBySlot.set(providerSlot(plugin.settings.ai), models);
-              if (models.length && (!plugin.settings.ai.model || !models.includes(plugin.settings.ai.model))) {
-                update({ model: models[0] }, false);
+              cache.checksBySlot.set(providerSlot(plugin.settings.ai), active);
+              if (active.models.length && (!plugin.settings.ai.model || !active.models.includes(plugin.settings.ai.model))) {
+                update({ model: active.models[0] }, false);
+              } else if (!active.models.length && plugin.settings.ai.model) {
+                update({ model: "" }, false);
               }
+              notifyConnection(active, tr);
               rerender();
             } finally {
               button.setDisabled(plugin.settings.ai.provider === "off");

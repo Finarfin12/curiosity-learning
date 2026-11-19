@@ -147,7 +147,7 @@ export const id: Labels = {
   "aiKey": "Kunci API",
   "aiKeyHelp": "Kunci memakai penyimpanan rahasia Obsidian jika tersedia. Versi lama menyimpannya selama sesi ini.",
   "aiModel": "Nama model",
-  "aiDetect": "Deteksi penyedia lokal",
+  "aiDetect": "Cek koneksi dan deteksi model",
   "desktopOnly": "Khusus desktop",
   "unavailable": "Tidak tersedia",
   "available": "Tersedia",
@@ -182,5 +182,15 @@ export const id: Labels = {
   "templatesOfferTitle": "Buat templat Curiosity Learning?",
   "templatesOfferBody": "Buat templat Topik dan Inbox siap pakai di dalam folder:",
   "templatesLater": "Nanti",
-  "templatesCreateNow": "Buat templat"
+  "templatesCreateNow": "Buat templat",
+  "aiChecking": "Memeriksa koneksi…",
+  "aiConnected": "Terhubung",
+  "aiNotConnected": "Tidak terhubung",
+  "aiModelsDetected": "model terdeteksi",
+  "aiModelsAvailable": "model tersedia",
+  "aiNoModels": "— Belum ada model terdeteksi —",
+  "aiNeedsKey": "— Belum ada model (masukkan kunci API) —",
+  "aiKeyRequired": "Kunci API diperlukan",
+  "aiConnectedTo": "Terhubung ke",
+  "aiDisconnectedFrom": "tidak terhubung (tidak tersedia)"
 };

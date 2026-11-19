@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.3
+
+- Remove all hardcoded AI model lists and auto-detect models directly from each available provider (Codex `models_cache.json`/`config.toml`, Claude `--help`/binary/`settings.json`, Gemini CLI binary/`settings.json`, Ollama `ollama list`/`/api/tags`, LM Studio `/v1/models`, and Cloud API `/v1/models` or `/v1beta/models`).
+- Show live AI connection status and popup notices (`Connected` / `Not connected`) when switching modes/providers, editing endpoints or API keys, or clicking **Check connection and detect models**.
+- Return empty model lists for unavailable providers or Cloud API without an API key.
+
 ## 0.4.2
 
 - Add automatic Obsidian Templates support (`Curiosity Learning Topic.md` and `Curiosity Learning Inbox.md`) via first-run prompt, **Settings → Templates**, and the **Create templates** command without overwriting existing files.
