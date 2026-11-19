@@ -1,10 +1,14 @@
 # Curiosity Learning
 
-An Obsidian plugin for capturing a first guess, testing understanding, and reviewing what you learn. Requires Obsidian 1.8.0 or later. Includes English and Indonesian. [Bahasa Indonesia](README.id.md)
+**English** · [Bahasa Indonesia](README.id.md) · [Obsidian Community Plugins](https://community.obsidian.md/plugins/curiosity-learning) · [GitHub Releases](https://github.com/Finarfin12/curiosity-learning/releases) · [Curiosity Capture (Chrome Extension)](https://github.com/Finarfin12/curiosity-capture) · [Curiosity Skill (Agent Skill)](https://github.com/Finarfin12/curiosity-skill)
 
-## Install locally
+An Obsidian plugin for capturing a first guess, testing understanding, and reviewing what you learn. Requires Obsidian 1.8.0 or later. Includes English and Indonesian.
 
-Run `npm ci` and `npm run build`. Copy `main.js`, `manifest.json`, and `styles.css` into `.obsidian/plugins/curiosity-learning/` inside the target vault. In **Settings → Community plugins**, enable **Curiosity Learning**. To try the included fixtures, run `npm run install-test-vault` and open `test-vault` as a vault.
+## Install
+
+- **From Obsidian Community Plugins (recommended):** Open [https://community.obsidian.md/plugins/curiosity-learning](https://community.obsidian.md/plugins/curiosity-learning) or go to **Settings → Community plugins → Browse**, search for **Curiosity Learning**, click **Install**, and then **Enable**.
+- **From GitHub Releases:** Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/Finarfin12/curiosity-learning/releases) into `<vault>/.obsidian/plugins/curiosity-learning/` and enable the plugin in **Settings → Community plugins**.
+- **Build locally:** Run `npm ci` and `npm run build`. Copy `main.js`, `manifest.json`, and `styles.css` into `.obsidian/plugins/curiosity-learning/` inside the target vault. To try the included fixtures, run `npm run install-test-vault` and open `test-vault` as a vault.
 
 ## Learn and review
 

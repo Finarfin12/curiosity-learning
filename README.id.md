@@ -1,10 +1,14 @@
 # Curiosity Learning
 
-Plugin Obsidian untuk mencatat dugaan awal, menguji pemahaman, dan mengulang materi. Memerlukan Obsidian 1.8.0 atau lebih baru. Tersedia dalam Bahasa Indonesia dan Inggris. [English](README.md)
+[English](README.md) · **Bahasa Indonesia** · [Obsidian Community Plugins](https://community.obsidian.md/plugins/curiosity-learning) · [GitHub Releases](https://github.com/Finarfin12/curiosity-learning/releases) · [Curiosity Capture (Ekstensi Chrome)](https://github.com/Finarfin12/curiosity-capture) · [Curiosity Skill (Skill Agent)](https://github.com/Finarfin12/curiosity-skill)
 
-## Instal lokal
+Plugin Obsidian untuk mencatat dugaan awal, menguji pemahaman, dan mengulang materi. Memerlukan Obsidian 1.8.0 atau lebih baru. Tersedia dalam Bahasa Indonesia dan Inggris.
 
-Jalankan `npm ci` dan `npm run build`. Salin `main.js`, `manifest.json`, dan `styles.css` ke `.obsidian/plugins/curiosity-learning/` di vault tujuan. Aktifkan **Curiosity Learning** di **Settings → Community plugins**. Untuk mencoba fixture, jalankan `npm run install-test-vault` dan buka folder `test-vault` sebagai vault.
+## Instalasi
+
+- **Dari Obsidian Community Plugins (disarankan):** Buka [https://community.obsidian.md/plugins/curiosity-learning](https://community.obsidian.md/plugins/curiosity-learning) atau masuk ke **Settings → Community plugins → Browse**, cari **Curiosity Learning**, klik **Install**, lalu **Enable**.
+- **Dari GitHub Releases:** Unduh `main.js`, `manifest.json`, dan `styles.css` dari [rilis terbaru](https://github.com/Finarfin12/curiosity-learning/releases) ke `<vault>/.obsidian/plugins/curiosity-learning/`, lalu aktifkan di **Settings → Community plugins**.
+- **Build lokal:** Jalankan `npm ci` dan `npm run build`. Salin `main.js`, `manifest.json`, dan `styles.css` ke `.obsidian/plugins/curiosity-learning/` di vault tujuan. Untuk mencoba fixture, jalankan `npm run install-test-vault` dan buka folder `test-vault` sebagai vault.
 
 ## Belajar dan mengulang
 
