@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.4
+
+- Streamline devDependencies and lockfile for reliable community scanner dependency installation.
+
 ## 0.4.3
 
 - Remove all hardcoded AI model lists and auto-detect models directly from each available provider (Codex `models_cache.json`/`config.toml`, Claude `--help`/binary/`settings.json`, Gemini CLI binary/`settings.json`, Ollama `ollama list`/`/api/tags`, LM Studio `/v1/models`, and Cloud API `/v1/models` or `/v1beta/models`).
