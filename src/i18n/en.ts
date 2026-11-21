@@ -141,7 +141,7 @@ export const en = {
   "aiLocalMode": "Local HTTP",
   "aiApiMode": "Cloud API",
   "aiOffHelp": "AI is off. Enable a provider in Settings to use it.",
-  "aiCliHelp": "CLI works on desktop. Claude, Codex and Gemini may use their cloud services.",
+  "aiCliHelp": "CLI works on desktop. Claude, Codex, Gemini and Antigravity may use their cloud services. Antigravity is detect-only: its models are listed but it does not run questions.",
   "aiEndpoint": "Endpoint URL",
   "aiKey": "API key",
   "aiKeyHelp": "The key uses Obsidian secret storage where available. Older versions retain it for this session.",
@@ -191,6 +191,7 @@ export const en = {
   "aiNeedsKey": "— No models detected (enter API key) —",
   "aiKeyRequired": "API key required",
   "aiConnectedTo": "Connected to",
-  "aiDisconnectedFrom": "is not connected (unavailable)"
+  "aiDisconnectedFrom": "is not connected (unavailable)",
+  "aiDetectOnly": "Detect only — not yet supported for running questions"
 };
 export type Labels = typeof en;

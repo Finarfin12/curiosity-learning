@@ -68,10 +68,12 @@ export function cliProvider(env: CliEnvironment, kind: CliKind, model: string): 
   return {
     label: cliNames[kind],
     async generate(prompt) {
+      const spec = cliSpecs[kind];
+      // Detect-only CLIs never run: refuse BEFORE touching the file system or spawning anything
+      if (spec.detectOnly) throw new Error(spec.detectOnly);
       const exe = await env.executable(kind);
       if (!exe) throw new Error("AI CLI is not installed");
       const workspace = await env.workspace();
-      const spec = cliSpecs[kind];
       try {
         const opts = { cwd: workspace.dir, stdin: "", timeoutMs: 4500 };
         const help = await env.runner.run(exe, spec.help, opts);

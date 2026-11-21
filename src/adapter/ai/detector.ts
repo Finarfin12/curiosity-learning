@@ -9,6 +9,10 @@ export interface DetectedProvider {
   label: string;
   status: "available" | "unavailable" | "desktopOnly";
   models: string[];
+  /** Display names by model id (Antigravity); the id is what gets saved. */
+  labels?: Record<string, string>;
+  /** Listed but never run (the CLI has no verified way to turn all its tools off). */
+  detectOnly?: boolean;
 }
 
 export interface ProviderCheckResult {
@@ -16,6 +20,8 @@ export interface ProviderCheckResult {
   connected: boolean;
   status: "available" | "unavailable" | "desktopOnly" | "needsKey";
   models: string[];
+  labels?: Record<string, string>;
+  detectOnly?: boolean;
 }
 
 const binaryModelCache = new Map<string, string[]>();
@@ -109,6 +115,25 @@ export function parseClaudeSettingsModels(json: string): string[] {
   } catch {
     return [];
   }
+}
+
+/**
+ * Output of `agy models`: lines of `id<TAB>display name`. Lines without a TAB (the "Fetching available models..."
+ * header), unsafe ids and duplicates are dropped; the order given by agy is kept.
+ */
+export function parseAgyModels(stdout: string): { ids: string[]; labels: Record<string, string> } {
+  const ids: string[] = [];
+  const labels: Record<string, string> = {};
+  for (const line of stdout.split(/\r?\n/)) {
+    const tab = line.indexOf("\t");
+    if (tab <= 0) continue;
+    const id = line.slice(0, tab).trim();
+    const name = line.slice(tab + 1).trim();
+    if (!isSafeModelName(id) || id in labels) continue;
+    ids.push(id);
+    labels[id] = name ? name.slice(0, 80) : id;
+  }
+  return { ids: ids.slice(0, 60), labels };
 }
 
 export function parseGeminiSettingsModels(json: string): string[] {
@@ -236,14 +261,32 @@ async function detectCliModels(
   return uniqueModels(cliModels);
 }
 
+/** `agy models` may contact its provider, so it gets more time than `--help`. Only this command is run. */
+const AGY_MODELS_TIMEOUT_MS = 15_000;
+
+async function detectAgy(exe: string, cwd: string, deps: AiDependencies): Promise<DetectedProvider> {
+  const label = cliNames.agy;
+  const cli = deps.cli;
+  if (!cli) return { label, status: "desktopOnly", models: [], detectOnly: true };
+  try {
+    const listing = await cli.runner.run(exe, ["models"], { cwd, stdin: "", timeoutMs: AGY_MODELS_TIMEOUT_MS });
+    if (listing.code !== 0) return { label, status: "unavailable", models: [], detectOnly: true };
+    const parsed = parseAgyModels(listing.stdout);
+    return { label, status: "available", models: parsed.ids, labels: parsed.labels, detectOnly: true };
+  } catch {
+    return { label, status: "unavailable", models: [], detectOnly: true };
+  }
+}
+
 async function detectCliProvider(kind: CliKind, settings: AiSettings, deps: AiDependencies): Promise<DetectedProvider> {
   const label = cliNames[kind];
-  if (!deps.cli) return { label, status: "desktopOnly", models: [] };
+  if (!deps.cli) return { label, status: "desktopOnly", models: [], ...(cliSpecs[kind].detectOnly ? { detectOnly: true } : {}) };
   let workspace;
   try {
     const exe = await deps.cli.executable(kind);
-    if (!exe) return { label, status: "unavailable", models: [] };
+    if (!exe) return { label, status: "unavailable", models: [], ...(cliSpecs[kind].detectOnly ? { detectOnly: true } : {}) };
     workspace = await deps.cli.workspace();
+    if (kind === "agy") return await detectAgy(exe, workspace.dir, deps);
     const spec = cliSpecs[kind];
     const help = await deps.cli.runner.run(exe, spec.help, { cwd: workspace.dir, timeoutMs: 4500, stdin: "" });
     const available = help.code === 0 && spec.guards.every(guard => help.stdout.includes(guard));
@@ -268,6 +311,8 @@ export async function checkActiveProvider(settings: AiSettings, deps: AiDependen
       connected: detected.status === "available",
       status: detected.status,
       models: detected.models,
+      ...(detected.labels ? { labels: detected.labels } : {}),
+      ...(detected.detectOnly ? { detectOnly: true } : {}),
     };
   }
   if (settings.provider === "local") {

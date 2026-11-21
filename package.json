@@ -1,6 +1,6 @@
 {
   "name": "curiosity-learning",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "main": "main.js",
@@ -8,7 +8,7 @@
   "scripts": {
     "test": "vitest run",
     "lint": "eslint src tests --max-warnings 0",
-    "build": "tsc --noEmit && node esbuild.config.mjs",
+    "build": "tsc --noEmit && tsc -p tsconfig.tests.json --noEmit && node esbuild.config.mjs",
     "install-test-vault": "node scripts/install-test-vault.mjs"
   },
   "devDependencies": {

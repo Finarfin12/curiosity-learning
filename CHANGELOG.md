@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- Add **Antigravity CLI** (`agy`) as a Desktop CLI provider, detected automatically. Its models come from `agy models` (`id<TAB>name` lines): the dropdown shows the names and saves the ids. If `agy` is missing, fails or times out (15 s), the provider shows **Not connected · Unavailable** with no models. No model names are hardcoded.
+- **Antigravity is detect-only.** The models are listed, but questions are never run through it: no verified flag turns all its tools off. Checked on the developer PC with `agy` 1.5.14: `--help` has no tools-off flag (`--sandbox` only restricts the terminal; `--mode plan` prints "has no effect while slash command expansion is disabled", and slash commands must stay disabled; the keys of `--settings` are not documented). Real runs with `-p --output-format json --disable-slash-commands --sandbox` still wrote a file and ran a shell command, and with `--settings {"toolPermission":"request-review","allowNonWorkspaceAccess":false}` it still wrote a file and read a file outside its workspace. The required flags (`-p`, `--output-format json`, `--disable-slash-commands`, `--sandbox`) and the forbidden ones (`--dangerously-skip-permissions`, `--continue`/`-c`, `--conversation`, `--remote-control`, `--prompt-interactive`, `--remote-agent`, `--add-dir`, ...) are enforced by a guard and tests, so enabling it later only needs a verified tools-off setting.
+- Gemini CLI is unchanged and still works where installed; on a PC without it, it shows **Unavailable** with no invented models. Claude Code, Codex CLI and Ollama behave as in 0.4.4.
+- Disclosure: for Antigravity the plugin runs `agy models` locally in an empty temporary folder (it may contact Antigravity's own service). Nothing else is run for it, and the plugin sends no note content to it.
+- Type check as the Obsidian review bot sees it: `src/` is checked without `@types/node` (own minimal Node types in `runner.ts`); tests are checked by `tsconfig.tests.json` in `npm run build`.
+- Release workflow: a version tag builds the release files from the tagged commit, runs the tests, creates GitHub artifact attestations for `main.js`, `manifest.json` and `styles.css`, and publishes the release. The lockfile is unchanged apart from the version.
+
 ## 0.4.4
 
 - Streamline devDependencies and lockfile for reliable community scanner dependency installation.

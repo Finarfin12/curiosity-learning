@@ -55,7 +55,7 @@ Open **Settings → Curiosity Learning → Optional AI**. Choose **Local CLI**, 
 
 | Mode | Configuration |
 | --- | --- |
-| Desktop CLI | Claude Code, Codex CLI, Gemini CLI, or Ollama on the executable PATH. Windows requires a native executable. Models are detected directly from each installed CLI (`~/.codex/models_cache.json`, Claude `--help`/binary, Gemini CLI config/binary, or `ollama list`). Unavailable CLIs report no models. |
+| Desktop CLI | Claude Code, Codex CLI, Gemini CLI, Antigravity CLI (`agy`), or Ollama on the executable PATH. Windows requires a native executable. Models are detected directly from each installed CLI (`~/.codex/models_cache.json`, Claude `--help`/binary, Gemini CLI config/binary, `agy models`, or `ollama list`). Unavailable CLIs report no models. **Antigravity is detect-only**: its models are listed but it never runs questions (see below). |
 | Local HTTP | Ollama at `http://127.0.0.1:11434` or LM Studio at `http://127.0.0.1:1234`, or another loopback port. Loads installed models directly from `/api/tags` or `/v1/models`. |
 | Cloud API | OpenAI-compatible, Anthropic, or Gemini. Enter an API key to load available models directly from the provider’s `/v1/models` or `/v1beta/models` endpoint. OpenAI-compatible accepts an HTTPS API base you trust. |
 
@@ -63,9 +63,13 @@ In **Diagnose and test understanding**, AI can propose a three-step worked examp
 
 ![Optional AI approval with labeled context](docs/images/optional-ai.png)
 
+### Antigravity CLI (detect-only)
+
+Pick **Antigravity CLI** under Desktop CLI to see the models `agy models` reports (names shown, ids saved). It is not used to run questions because there is no verified way to turn all of its tools off: in real tests on `agy` 1.5.14 it still wrote files and read files outside its workspace even with `--sandbox` and a restrictive `--settings`. The plugin refuses any `agy` command line without `-p`, `--output-format json`, `--disable-slash-commands` and `--sandbox`, or with `--dangerously-skip-permissions`, `--continue`, `--conversation`, `--remote-control` or `--prompt-interactive`. Gemini CLI is still supported where installed and shows **Unavailable** where it is not.
+
 ### AI network disclosure
 
-AI is off by default. The plugin sends only the approved context and fixed instructions to the selected provider. Local HTTP targets loopback only. CLI sends the prompt through stdin and the chosen CLI may contact its provider, including cloud services for Claude Code, Codex, and Gemini. Cloud API sends to `api.openai.com` or the chosen compatible HTTPS host, `api.anthropic.com`, or `generativelanguage.googleapis.com`. Cloud usage may be billed by the provider.
+AI is off by default. The plugin sends only the approved context and fixed instructions to the selected provider. Local HTTP targets loopback only. CLI sends the prompt through stdin and the chosen CLI may contact its provider, including cloud services for Claude Code, Codex, and Gemini. To list Antigravity models the plugin runs `agy models` locally in an empty temporary folder (it may contact Antigravity's own service) and sends no note content to it. Cloud API sends to `api.openai.com` or the chosen compatible HTTPS host, `api.anthropic.com`, or `generativelanguage.googleapis.com`. Cloud usage may be billed by the provider.
 
 API keys are scoped to the selected provider and endpoint. They use Obsidian secret storage where supported and an in-memory session value on older versions. Keys are excluded from learning notes and the consent preview. This feature only writes learning content you accept.
 
