@@ -1,6 +1,6 @@
 import type { Axis, Score } from "../types";
 
-export type CliKind = "claude" | "codex" | "gemini" | "ollama";
+export type CliKind = "claude" | "codex" | "gemini" | "ollama" | "agy";
 export type LocalKind = "ollama" | "lmstudio";
 export type ApiKind = "openai" | "anthropic" | "gemini";
 export type AiMode = "off" | "cli" | "local" | "api";
@@ -23,7 +23,7 @@ export function normalizeAi(value?: Partial<AiSettings> | null): AiSettings {
   const from = value ?? {};
   return {
     provider: from.provider === "local" || from.provider === "api" || from.provider === "cli" ? from.provider : "off",
-    cli: from.cli === "codex" || from.cli === "gemini" || from.cli === "ollama" ? from.cli : "claude",
+    cli: from.cli === "codex" || from.cli === "gemini" || from.cli === "ollama" || from.cli === "agy" ? from.cli : "claude",
     local: from.local === "lmstudio" ? "lmstudio" : "ollama",
     api: from.api === "anthropic" || from.api === "gemini" ? from.api : "openai",
     localUrl: typeof from.localUrl === "string" ? from.localUrl.trim() : "",

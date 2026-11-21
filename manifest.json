@@ -1,7 +1,7 @@
 {
   "id": "curiosity-learning",
   "name": "Curiosity Learning",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "minAppVersion": "1.8.0",
   "description": "Test your understanding with a learning queue, confidence calibration, and spaced review.",
   "author": "Finarfin12",

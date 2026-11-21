@@ -3,6 +3,41 @@ import type { CliKind } from "../../domain/ai/types";
 declare const require: (id: string) => unknown;
 const native = (id: string): unknown => require(id);
 
+/*
+ * Minimal Node types, written here on purpose. The Obsidian review bot type-checks `src/` WITHOUT @types/node, so
+ * `typeof import("fs")` and friends turn into error types and trigger no-unsafe-* findings. With these local types the
+ * result is the same on the developer machine and on the bot.
+ */
+interface Readable { setEncoding(enc: "utf8"): Readable; on(event: "data", cb: (chunk: string) => void): Readable }
+interface Writable { on(event: "error", cb: () => void): void; end(data: string, enc: "utf8"): void }
+interface ChildLike {
+  pid?: number;
+  stdout: Readable;
+  stdin: Writable;
+  kill(signal: string): void;
+  on(event: "error", cb: () => void): void;
+  on(event: "close", cb: (code: number | null) => void): void;
+}
+interface SpawnOptions {
+  cwd?: string; env?: Record<string, string | undefined>; shell?: false; windowsHide?: boolean; detached?: boolean; stdio: string | string[];
+}
+interface ChildProcessModule { spawn(file: string, args: string[], options: SpawnOptions): ChildLike }
+interface PathModule { join(...parts: string[]): string; isAbsolute(p: string): boolean; delimiter: string }
+interface OsModule { tmpdir(): string; homedir(): string }
+interface FsStats { isFile(): boolean }
+interface FsModule {
+  constants: { X_OK: number };
+  promises: {
+    stat(p: string): Promise<FsStats>;
+    access(p: string, mode: number): Promise<void>;
+    mkdtemp(prefix: string): Promise<string>;
+    writeFile(p: string, body: string, options: { flag: string; mode: number }): Promise<void>;
+    rm(p: string, options: { recursive: boolean; force: boolean; maxRetries: number; retryDelay: number }): Promise<void>;
+    readFile(p: string, options: { encoding: "utf8" | "latin1" }): Promise<string>;
+  };
+}
+interface ProcessModule { platform: string; env: Record<string, string | undefined>; kill(pid: number, signal: string): void }
+
 export interface RunOptions {
   cwd: string;
   stdin: string;
@@ -30,9 +65,9 @@ export function desktopCli(): CliEnvironment {
   return {
     runner: {
       async run(file, args, options) {
-        const cp = native("child_process") as typeof import("child_process");
-        const path = native("path") as typeof import("path");
-        const runtime = native("process") as typeof import("process");
+        const cp = native("child_process") as ChildProcessModule;
+        const path = native("path") as PathModule;
+        const runtime = native("process") as ProcessModule;
         const windows = runtime.platform === "win32";
         return new Promise((resolve, reject) => {
           let stdout = "";
@@ -66,15 +101,15 @@ export function desktopCli(): CliEnvironment {
           });
           child.stdin.on("error", () => undefined);
           child.on("error", fail);
-          child.on("close", code => finish(() => resolve({ code, stdout })));
+          child.on("close", (code: number | null) => finish(() => resolve({ code, stdout })));
           child.stdin.end(options.stdin, "utf8");
         });
       },
     },
     async executable(kind) {
-      const fs = native("fs") as typeof import("fs");
-      const path = native("path") as typeof import("path");
-      const runtime = native("process") as typeof import("process");
+      const fs = native("fs") as FsModule;
+      const path = native("path") as PathModule;
+      const runtime = native("process") as ProcessModule;
       const windows = runtime.platform === "win32";
       for (const raw of (runtime.env.PATH ?? "").split(path.delimiter)) {
         const dir = raw.replace(/^"|"$/g, "");
@@ -89,9 +124,9 @@ export function desktopCli(): CliEnvironment {
       return null;
     },
     async workspace() {
-      const fs = native("fs") as typeof import("fs");
-      const path = native("path") as typeof import("path");
-      const os = native("os") as typeof import("os");
+      const fs = native("fs") as FsModule;
+      const path = native("path") as PathModule;
+      const os = native("os") as OsModule;
       const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "curiosity-ai-"));
       return {
         dir,
@@ -107,7 +142,7 @@ export function desktopCli(): CliEnvironment {
       };
     },
     async readFile(filePath, encoding = "utf8") {
-      const fs = native("fs") as typeof import("fs");
+      const fs = native("fs") as FsModule;
       try {
         return await fs.promises.readFile(filePath, { encoding });
       } catch {
@@ -115,11 +150,11 @@ export function desktopCli(): CliEnvironment {
       }
     },
     homeDir() {
-      const os = native("os") as typeof import("os");
+      const os = native("os") as OsModule;
       return os.homedir();
     },
     env(name) {
-      const runtime = native("process") as typeof import("process");
+      const runtime = native("process") as ProcessModule;
       return runtime.env[name];
     },
   };

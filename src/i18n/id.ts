@@ -142,7 +142,7 @@ export const id: Labels = {
   "aiLocalMode": "HTTP lokal",
   "aiApiMode": "API cloud",
   "aiOffHelp": "AI nonaktif. Aktifkan penyedia di Settings untuk menggunakannya.",
-  "aiCliHelp": "CLI berjalan di desktop. Claude, Codex, dan Gemini dapat menggunakan layanan cloud mereka.",
+  "aiCliHelp": "CLI berjalan di desktop. Claude, Codex, Gemini, dan Antigravity dapat menggunakan layanan cloud mereka. Antigravity hanya dideteksi: modelnya ditampilkan tetapi tidak menjalankan pertanyaan.",
   "aiEndpoint": "URL endpoint",
   "aiKey": "Kunci API",
   "aiKeyHelp": "Kunci memakai penyimpanan rahasia Obsidian jika tersedia. Versi lama menyimpannya selama sesi ini.",
@@ -192,5 +192,6 @@ export const id: Labels = {
   "aiNeedsKey": "— Belum ada model (masukkan kunci API) —",
   "aiKeyRequired": "Kunci API diperlukan",
   "aiConnectedTo": "Terhubung ke",
-  "aiDisconnectedFrom": "tidak terhubung (tidak tersedia)"
+  "aiDisconnectedFrom": "tidak terhubung (tidak tersedia)",
+  "aiDetectOnly": "Deteksi saja — belum didukung untuk menjalankan pertanyaan"
 };

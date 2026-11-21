@@ -55,7 +55,7 @@ Buka **Settings → Curiosity Learning → AI opsional**. Pilih **CLI lokal**, *
 
 | Mode | Pengaturan |
 | --- | --- |
-| CLI desktop | Claude Code, Codex CLI, Gemini CLI, atau Ollama melalui PATH. Windows memerlukan executable native. Daftar model dideteksi langsung dari CLI yang terpasang (`~/.codex/models_cache.json`, `--help`/binary Claude, konfigurasi/binary Gemini CLI, atau `ollama list`). CLI yang tidak tersedia menampilkan daftar kosong. |
+| CLI desktop | Claude Code, Codex CLI, Gemini CLI, Antigravity CLI (`agy`), atau Ollama melalui PATH. Windows memerlukan executable native. Daftar model dideteksi langsung dari CLI yang terpasang (`~/.codex/models_cache.json`, `--help`/binary Claude, konfigurasi/binary Gemini CLI, `agy models`, atau `ollama list`). CLI yang tidak tersedia menampilkan daftar kosong. **Antigravity hanya dideteksi**: modelnya ditampilkan tetapi tidak pernah menjalankan pertanyaan (lihat di bawah). |
 | HTTP lokal | Ollama di `http://127.0.0.1:11434` atau LM Studio di `http://127.0.0.1:1234`, atau port loopback lain. Memuat model langsung dari `/api/tags` atau `/v1/models`. |
 | API cloud | OpenAI-compatible, Anthropic, atau Gemini. Isi kunci API untuk memuat daftar model langsung dari endpoint `/v1/models` atau `/v1beta/models` penyedia. OpenAI-compatible menerima alamat dasar API HTTPS yang kamu percayai. |
 
@@ -63,9 +63,13 @@ Dalam **Diagnosis dan uji pemahaman**, AI dapat mengusulkan contoh tiga langkah,
 
 ![Persetujuan AI dengan konteks berlabel](docs/images/optional-ai.png)
 
+### Antigravity CLI (hanya deteksi)
+
+Pilih **Antigravity CLI** di CLI desktop untuk melihat model yang dilaporkan `agy models` (nama ditampilkan, id disimpan). Ia tidak dipakai menjalankan pertanyaan karena belum ada cara terverifikasi untuk mematikan semua tool-nya: pada uji nyata `agy` 1.5.14 ia tetap menulis file dan membaca file di luar workspace-nya walau memakai `--sandbox` dan `--settings` yang membatasi. Plugin menolak setiap perintah `agy` tanpa `-p`, `--output-format json`, `--disable-slash-commands`, dan `--sandbox`, atau yang memuat `--dangerously-skip-permissions`, `--continue`, `--conversation`, `--remote-control`, atau `--prompt-interactive`. Gemini CLI tetap didukung bila terpasang dan menampilkan **Tidak tersedia** bila tidak ada.
+
 ### Pengungkapan jaringan AI
 
-AI nonaktif secara bawaan. Plugin hanya mengirim konteks yang disetujui beserta instruksi tetap ke penyedia yang dipilih. HTTP lokal memakai alamat loopback. CLI menerima prompt lewat stdin dan bisa terhubung ke layanan penyedianya, termasuk cloud untuk Claude Code, Codex, dan Gemini. API cloud menghubungi `api.openai.com` atau host HTTPS kompatibel yang dipilih, `api.anthropic.com`, atau `generativelanguage.googleapis.com`. Penyedia dapat mengenakan biaya pemakaian cloud.
+AI nonaktif secara bawaan. Plugin hanya mengirim konteks yang disetujui beserta instruksi tetap ke penyedia yang dipilih. HTTP lokal memakai alamat loopback. CLI menerima prompt lewat stdin dan bisa terhubung ke layanan penyedianya, termasuk cloud untuk Claude Code, Codex, dan Gemini. Untuk mendaftar model Antigravity, plugin menjalankan `agy models` secara lokal di folder sementara kosong (bisa menghubungi layanan Antigravity sendiri) dan tidak mengirim isi catatan ke sana. API cloud menghubungi `api.openai.com` atau host HTTPS kompatibel yang dipilih, `api.anthropic.com`, atau `generativelanguage.googleapis.com`. Penyedia dapat mengenakan biaya pemakaian cloud.
 
 Kunci API dipisahkan menurut penyedia dan endpoint. Plugin memakai penyimpanan rahasia Obsidian pada versi yang mendukungnya dan memori sesi untuk versi lama. Kunci dikecualikan dari catatan belajar dan pratinjau persetujuan. Plugin menulis hasil belajar setelah kamu menyetujuinya.
 

@@ -40,7 +40,10 @@ function providerSlot(settings: AiSettings): string {
 
 function statusLine(check: ProviderCheckResult | undefined, tr: Labels): string {
   if (!check) return tr.aiChecking;
-  if (check.connected) return `${tr.aiConnected} · ${check.models.length} ${tr.aiModelsAvailable}`;
+  if (check.connected) {
+    const line = `${tr.aiConnected} · ${check.models.length} ${tr.aiModelsAvailable}`;
+    return check.detectOnly ? `${line} · ${tr.aiDetectOnly}` : line;
+  }
   if (check.status === "needsKey") return `${tr.aiNotConnected} · ${tr.aiKeyRequired}`;
   if (check.status === "desktopOnly") return `${tr.aiNotConnected} · ${tr.desktopOnly}`;
   return `${tr.aiNotConnected} · ${tr.unavailable}`;
@@ -74,7 +77,8 @@ function applyModelOptions(
   selectEl.disabled = false;
   const chosen = models.includes(current) ? current : models[0];
   for (const model of models) {
-    selectEl.createEl("option", { text: model, value: model });
+    // Show the display name when the provider gives one (Antigravity); the id is what gets saved
+    selectEl.createEl("option", { text: check?.labels?.[model] ?? model, value: model });
   }
   selectEl.value = chosen;
   return chosen;

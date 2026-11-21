@@ -9,11 +9,10 @@
     "lib": [
       "ES2021",
       "DOM"
-    ]
+    ],
+    "types": []
   },
   "include": [
-    "src",
-    "tests",
-    "vitest.config.ts"
+    "src"
   ]
 }

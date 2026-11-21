@@ -1,5 +1,5 @@
 import type { AiSettings } from "../../domain/ai/types";
-import { isSafeModelName } from "./cliSpecs";
+import { cliSpecs, isSafeModelName } from "./cliSpecs";
 import { endpointBase, type HttpClient } from "./http";
 import { apiDefaults, cliProvider, httpProvider, localDefaults } from "./providers";
 import type { CliEnvironment } from "./runner";
@@ -10,7 +10,8 @@ export function makeAiProvider(settings: AiSettings, deps: AiDependencies, key: 
   switch (settings.provider) {
     case "off": return null;
     case "cli":
-      if (!deps.cli || (settings.model ? !isSafeModelName(settings.model) : settings.cli === "ollama")) return null;
+      if (!deps.cli || cliSpecs[settings.cli].detectOnly) return null;
+      if (settings.model ? !isSafeModelName(settings.model) : settings.cli === "ollama") return null;
       if (settings.cli === "ollama" && /(?:-|:)cloud(?:[:/]|$)/i.test(settings.model)) return null;
       return cliProvider(deps.cli, settings.cli, settings.model);
     case "local": {
